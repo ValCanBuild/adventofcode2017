@@ -8,6 +8,15 @@ public extension String {
     }
 }
 
+extension String {
+    public func pad(with padding: Character, toLength length: Int) -> String {
+        let paddingWidth = length - self.count
+        guard 0 < paddingWidth else { return self }
+
+        return String(repeating: padding, count: paddingWidth) + self
+    }
+}
+
 func knotHashIter(values: [Int], lengths: [Int], startSkipSize: Int, startCurrentPos: Int) -> ([Int], Int, Int) {
 
     let numElements = values.count
@@ -102,11 +111,7 @@ public func inputToBinaryStringArray(_ puzzleInput: String) -> [String] {
             let endIndex = hash.index(startIndex, offsetBy: 8)
             let substr = String(hash[startIndex..<endIndex])
 
-            binaryString += substr.hexToBinary
-        }
-
-        while (binaryString.count < 128) {
-            binaryString.append("0")
+            binaryString += substr.hexToBinary.pad(with: "0", toLength: 32)
         }
 
         binaryArray.append(binaryString)

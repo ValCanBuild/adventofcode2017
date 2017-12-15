@@ -115,41 +115,33 @@ public func inputToBinaryStringArray(_ puzzleInput: String) -> [String] {
     return binaryArray
 }
 
-public func numRegions(_ binaryArray: [String]) -> Int {
-    var charArray = binaryArray.map { Array($0) }
+public func numRegions(_ binaryArray: [[Int]]) -> Int {
+    var array = binaryArray
 
-    let numRows = charArray.count
-    let numColumns = charArray[0].count
+    let numRows = array.count
+    let numColumns = array[0].count
 
     func markAdjacent(_ x: Int, _ y: Int) {
-        charArray[x][y] = "0"
+        array[x][y] = 0
 
         let prevY = y - 1
-        if (prevY >= 0) {
-            if (charArray[x][prevY] == "1") {
-                markAdjacent(x, prevY)
-            }
+        if (prevY >= 0 && array[x][prevY] == 1) {
+            markAdjacent(x, prevY)
         }
 
         let nextY = y + 1
-        if (nextY < numColumns) {
-            if (charArray[x][nextY] == "1") {
-                markAdjacent(x, nextY)
-            }
+        if (nextY < numColumns && array[x][nextY] == 1) {
+            markAdjacent(x, nextY)
         }
 
         let prevX = x - 1
-        if (prevX >= 0) {
-            if (charArray[prevX][y] == "1") {
-                markAdjacent(prevX, y)
-            }
+        if (prevX >= 0 && array[prevX][y] == 1) {
+            markAdjacent(prevX, y)
         }
 
         let nextX = x + 1
-        if (nextX < numRows) {
-            if (charArray[nextX][y] == "1") {
-                markAdjacent(nextX, y)
-            }
+        if (nextX < numRows && array[nextX][y] == 1) {
+            markAdjacent(nextX, y)
         }
     }
 
@@ -157,7 +149,7 @@ public func numRegions(_ binaryArray: [String]) -> Int {
 
     for i in 0..<numRows {
         for j in 0..<numColumns {
-            let used = charArray[i][j] == "1"
+            let used = array[i][j] == 1
             if (used) {
                 numRegions += 1
                 markAdjacent(i, j)

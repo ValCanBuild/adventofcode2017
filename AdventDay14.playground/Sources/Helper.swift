@@ -105,7 +105,7 @@ public func inputToBinaryStringArray(_ puzzleInput: String) -> [String] {
             binaryString += substr.hexToBinary
         }
 
-        while (binaryString.count < 127) {
+        while (binaryString.count < 128) {
             binaryString.append("0")
         }
 

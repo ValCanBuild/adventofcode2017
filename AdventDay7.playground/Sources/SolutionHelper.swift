@@ -12,6 +12,57 @@ public struct Tower {
     }
 }
 
+public class Node {
+    public let name: String
+    public let weight: Int
+    public weak var parent: Node? = nil
+    public var children: [Node] = [] {
+        didSet {
+            for child in children {
+                child.parent = self
+            }
+        }
+    }
+
+    init(_ tower: Tower) {
+        self.name = tower.name
+        self.weight = tower.weight
+    }
+
+    public var combinedWeight: Int {
+        get {
+            let childrenWeight = children.map { $0.combinedWeight }.reduce(0, +)
+            return weight + childrenWeight
+        }
+    }
+
+    public var isBalanced: Bool {
+        get {
+            let childWeights = children.map { $0.combinedWeight }
+            return Set(childWeights).count == 1
+        }
+    }
+
+    public var unbalancedChild: (Node, Int) {
+        get {
+            var weightNodeDict: [Int : [Node]] = [:]
+            for child in children {
+                if weightNodeDict[child.combinedWeight] != nil {
+                    weightNodeDict[child.combinedWeight]!.append(child)
+                } else {
+                    weightNodeDict[child.combinedWeight] = [child]
+                }
+            }
+
+            let targetWeight = weightNodeDict.first { $0.value.count > 1 }!.key
+            let unbalancedChild = weightNodeDict.first { $0.value.count == 1 }!.value.first!
+
+            return (unbalancedChild, targetWeight)
+        }
+    }
+
+}
+
 public func inputToTowers(input: String) -> [Tower] {
     let inputLines = input.components(separatedBy: .newlines)
     
@@ -40,14 +91,41 @@ public func inputToTowers(input: String) -> [Tower] {
     return towers
 }
 
-public func findBottomTower(towers: [Tower]) -> Tower {
+public func inputToNodes(_ input: String) -> [Node] {
+    let towers = inputToTowers(input: input)
+    let nodes: [Node] = towers.map { Node($0) }
+
     let towersWithTowers = towers.filter { !$0.towerNamesAbove.isEmpty }
-    
-    let bottom = towersWithTowers.first {
-        let towerName = $0.name
-        let containedAbove = towersWithTowers.first { $0.name != towerName && $0.towerNamesAbove.contains(towerName) } == nil
-        return containedAbove
+    for tower in towersWithTowers {
+        let node = nodes.first { $0.name == tower.name }!
+        node.children = tower.towerNamesAbove.map { name in
+            return nodes.first { $0.name == name }!
+        }
     }
-    
-    return bottom!
+
+    return nodes
+}
+
+public func part1(_ input: String) -> String {
+
+    let nodes: [Node] = inputToNodes(input)
+
+    let topNode = nodes.first { $0.parent == nil }!
+    return topNode.name
+}
+
+public func part2(_ input: String) -> (Int, String) {
+
+    let nodes: [Node] = inputToNodes(input)
+
+    var node = nodes.first { $0.parent == nil }!
+    var targetWeight = 0
+
+    while (!node.isBalanced) {
+        (node, targetWeight) = node.unbalancedChild
+    }
+
+    let weightDiff = targetWeight - node.combinedWeight
+    let weightNeeded = node.weight + weightDiff
+    return (weightNeeded, node.name)
 }
